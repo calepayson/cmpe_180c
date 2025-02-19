@@ -16,9 +16,9 @@ typedef struct {
     char *name;
 } Input;
 
-const Range NUMS_TO_GEN_RANGE = {1, 100};
-const Range NUMS_RANGE = {1, 99};
-const Range POWER_BALL_RANGE = {1, 99};
+const Range NUMS_TO_GEN_RANGE = {1, 32767};
+const Range NUMS_RANGE = {1, 32767};
+const Range POWER_BALL_RANGE = {1, 32767};
 const Range NUM_SETS_RANGE = {1, 32767};
 
 void validate_input(Input *input);
