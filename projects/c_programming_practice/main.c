@@ -25,6 +25,8 @@ void validate_input(Input *input);
 
 int rand_in_range(int min, int max);
 
+bool num_in_arr(int arr[], int size, int num);
+
 int main(int argc, char *argv[]) {
     Input numbers_to_generate = {0, true, false, NUMS_TO_GEN_RANGE,
                                  "-n <NumbersToGenerate>"};
@@ -68,9 +70,29 @@ int main(int argc, char *argv[]) {
     validate_input(&max_power_ball_number);
     validate_input(&number_sets_to_generate);
 
+    if (numbers_to_generate.value > max_number.value) {
+        fprintf(stderr,
+                "-n <NumbersToGenerate> must be less than or equal to "
+                "-r <MaxNumber>.\n"
+                "    NumbersToGenerate: %i\n"
+                "    MaxNumber: %i\n",
+                numbers_to_generate.value, max_number.value);
+        exit(EXIT_FAILURE);
+    }
+
     for (int i = 0; i < number_sets_to_generate.value; i++) {
+        int arr[numbers_to_generate.value];
         for (int j = 0; j < numbers_to_generate.value; j++) {
-            int num = rand_in_range(max_number.range.min, max_number.value);
+            int num;
+            bool duplicate;
+
+            duplicate = true;
+            while (duplicate) {
+                num = rand_in_range(max_number.range.min, max_number.value);
+                duplicate = num_in_arr(arr, j, num);
+                arr[j] = num;
+            }
+
             if (!max_power_ball_number.provided &&
                 j + 1 == numbers_to_generate.value) {
                 printf("%i", num);
@@ -115,3 +137,12 @@ void validate_input(Input *input) {
 }
 
 int rand_in_range(int min, int max) { return min + rand() % (max - min + 1); }
+
+bool num_in_arr(int arr[], int size, int num) {
+    for (int i = 0; i < size; i++) {
+        if (arr[i] == num) {
+            return true;
+        }
+    }
+    return false;
+}
