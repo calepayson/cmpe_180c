@@ -36,9 +36,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (num_zombies <= 0) {
+    if (num_zombies <= 0 || num_zombies > 1024) {
         fprintf(stderr,
-                "Please supply a positive integer for NumberOfZombies\n");
+                "Please supply a positive integer within [1, 1024] for "
+                "NumberOfZombies\n");
         return 1;
     }
 
