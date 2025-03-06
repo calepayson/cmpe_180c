@@ -21,9 +21,9 @@ void handle_sigcont(int sig) {
 }
 
 int main(int argc, char *argv[]) {
-    pid_t pid, parent_pid;
-    int opt, num_zombies;
-    num_zombies = 0;
+    pid_t child_pids[1024];
+    int opt, num_zombies, children_created;
+    num_zombies = children_created = 0;
 
     while ((opt = getopt(argc, argv, "n:")) != -1) {
         switch (opt) {
@@ -42,31 +42,29 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // TODO: Remove
-    printf("Zombies: %i\n", num_zombies);
-
-    parent_pid = getpid();
     for (int i = 0; i < num_zombies; i++) {
-        if (getpid() == parent_pid) {
-            pid = fork();
+        pid_t pid = fork();
+
+        if (pid == -1) {
+            fprintf(stderr, "Failed to fork.\n");
+            exit(EXIT_FAILURE);
+        } else if (pid == 0) {
+            // Child process - immediately become a zombie
+            exit(0);
+        } else {
+            child_pids[children_created++] = pid;
         }
     }
 
-    switch (pid) {
-        case -1:
-            fprintf(stderr, "Error during fork.\n");
-            exit(EXIT_FAILURE);
-        case 0:
-            return 0;
-        default: {
-            int status;
+    // Wait for SIGCONT
+    signal(SIGCONT, handle_sigcont);
+    pause();
 
-            signal(SIGCONT, handle_sigcont);
-            pause();
-            if (wait(&status) == -1) {
-                fprintf(stderr, "Wait failed.\n");
-                return 1;
-            }
+    for (int i = 0; i < children_created; i++) {
+        int status;
+        pid_t result = waitpid(child_pids[i], &status, 0);
+        if (result == -1) {
+            fprintf(stderr, "waitpid failed.\n");
         }
     }
 
